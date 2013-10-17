@@ -1,5 +1,6 @@
 package coolalias.redstonehelper;
 
+import java.util.List;
 import java.util.logging.Level;
 
 import net.minecraft.block.Block;
@@ -9,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
@@ -296,5 +298,21 @@ public class ItemRedstoneHelper extends Item
 	@SideOnly(Side.CLIENT)
 	public void registerIcons(IconRegister iconRegister) {
 		this.itemIcon = iconRegister.registerIcon(ModInfo.MOD_ID + ":" + this.getUnlocalizedName().substring(5).toLowerCase());
+	}
+	
+	/**
+	 * Allows items to add custom lines of information to the mouseover description
+	 */
+	@Override
+	public void addInformation(ItemStack itemstack, EntityPlayer player, List list, boolean par4)
+	{
+		if (getCurrentStructure(itemstack) != null)
+		{
+			List<String> descriptions = RedstoneGenerator.descriptions.get(getCurrentStructure(itemstack).name);
+			
+			for (String description : descriptions) {
+				list.add(EnumChatFormatting.ITALIC + description);
+			}
+		}
 	}
 }

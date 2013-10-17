@@ -4,8 +4,18 @@ import net.minecraft.block.Block;
 
 public class LogicGates
 {
+	// Generic filler block on which to place redstone wire / torches / etc.
+	public static final int BASE = 4096;
+	
 	private static final int
-		BASE = Block.dirt.blockID,
+		// Color for wool blocks denoting input and output locations of circuit
+		INPUT = 3, OUTPUT = 14, INOUT = Block.cloth.blockID,
+		
+		// Generic filler block on which to place redstone wire / torches / etc.
+		// ERROR: causes exception error during static initialization, need to change to static 'load' method called from main mod
+		//BASE = RedstoneHelper.getBaseBlockID(),
+		//BASE = Block.dirt.blockID,
+		
 		PISTON = Block.pistonBase.blockID,
 		STICKY = Block.pistonStickyBase.blockID,
 		TORCH = Block.torchRedstoneActive.blockID,
@@ -29,22 +39,22 @@ public class LogicGates
 	
 	public static final int[][][][] orGateFlat =
 	{
-		{{{BASE},{BASE},{BASE}}},
+		{{{INOUT,INPUT},{INOUT,OUTPUT},{INOUT,INPUT}}},
 	    {{{WIRE},{WIRE},{WIRE}}}
 	};
 	
 	public static final int[][][][] orGateTall =
 	{
-	    {{{},{BASE},{BASE}}},
+	    {{{},{INOUT,OUTPUT},{INOUT,INPUT}}},
 	    {{{BASE},{WIRE},{WIRE}}},
-	    {{{REPEATER,2},{BASE}}}
+	    {{{REPEATER,2},{INOUT,INPUT}}}
 	};
 	
 	public static final int[][][][] norGateFlat =
 	{
 		{
-			{{BASE},{BASE},{BASE}},
-			{{},{TORCH,2}},
+			{{INOUT,INPUT},{BASE},{INOUT,INPUT}},
+			{{},{TORCH,1}},
 			{{},{WIRE}}
 		},
 	    {{{WIRE},{WIRE},{WIRE}}}
@@ -52,9 +62,9 @@ public class LogicGates
 	
 	public static final int[][][][] norGateTall =
 	{
-	    {{{},{},{BASE}}},
-	    {{{BASE},{TORCH,3},{WIRE}}},
+	    {{{},{},{INOUT,OUTPUT}}},
+	    {{{INOUT,INPUT},{TORCH,3},{WIRE}}},
 	    {{{WIRE}}},
-	    {{{BASE}}}
+	    {{{INOUT,INPUT}}}
 	};
 }
