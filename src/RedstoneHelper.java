@@ -40,7 +40,7 @@ public class RedstoneHelper
 	
 	public static Item logicHelper;
 	
-	public static Item baseBlock;// = new Item(8890 - 256).setUnlocalizedName("baseBlockItem");
+	public static Item baseBlockItem;// = new Item(8890 - 256).setUnlocalizedName("baseBlockItem");
 	
 	private static int baseBlockID;
 	
@@ -62,7 +62,7 @@ public class RedstoneHelper
         property.comment = "If true, consumes all blocks/items used in the circuit generated";
         requiresMaterials = property.getBoolean(true);
         
-        if (FMLCommonHandler.instance().getSide().isClient())// && FMLCommonHandler.instance().findContainerFor(StructureGenMain.instance).)
+        if (FMLCommonHandler.instance().getSide().isClient())
         	RHKeyBindings.init(config);
         
         config.save();
@@ -75,7 +75,7 @@ public class RedstoneHelper
 		GameRegistry.addShapelessRecipe(new ItemStack(logicHelper), Item.stick, Block.dirt);
 		LanguageRegistry.addName(logicHelper, "Logic Helper");
 		
-		baseBlock = new Item(modItemIndex++).setUnlocalizedName("baseBlockItem");
+		baseBlockItem = new Item(modItemIndex++).setUnlocalizedName("baseBlockItem");
 	}
 	
 	@EventHandler

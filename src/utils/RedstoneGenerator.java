@@ -1,5 +1,6 @@
 package coolalias.redstonehelper.utils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	public static final List<Structure> structures = new LinkedList();
 	
 	/** List of all items required to build a structure, retrieved by structure's name */
-	public static final Map<String, List<ItemStack>> itemsRequired = new HashMap();
+	public static final Map<String, Map<List<Integer>, Integer>> itemsRequired = new HashMap();
 	
 	public static final Map<String, List<String>> descriptions = new HashMap();
 	
@@ -47,7 +48,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	@Override
 	public int getRealBlockID(int fakeID, int customData1)
 	{
-		if (fakeID == LogicGates.BASE)
+		if (fakeID == LogicGates.BASE || fakeID == RedstoneHelper.baseBlockItem.itemID)
 		{
 			int id = RedstoneHelper.getBaseBlockID();
 			
@@ -68,10 +69,10 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	/**
 	 * Returns true if player has all items required to generate structure and consumes those items
 	 */
-	public final boolean checkInventory(EntityPlayer player, List<ItemStack> list)
+	public final boolean checkInventory(EntityPlayer player, Map<List<Integer>, Integer> countMap)
 	{
-		if (list == null || list.isEmpty()) {
-			LogHelper.log(Level.WARNING, "List of required items was null or empty for currently generating structure.");
+		if (countMap == null || countMap.isEmpty()) {
+			LogHelper.log(Level.WARNING, "Map of required items was null or empty for currently generating structure.");
 			return true;
 		}
 		
@@ -79,10 +80,35 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		InventoryPlayer temp = new InventoryPlayer(FakePlayerFactory.getMinecraft(player.worldObj)); 
 		temp.copyInventory(player.inventory);
 		
+		for (List<Integer> keyArray : countMap.keySet())
+		{
+			int stacksize = countMap.get(keyArray);
+			int itemID = keyArray.get(0);
+			
+			if (itemID == RedstoneHelper.baseBlockItem.itemID)
+				itemID = getRealBlockID(itemID, 0);
+			else if (itemID == Block.redstoneWire.blockID)
+				itemID = Item.redstone.itemID;
+			else if (itemID == Block.redstoneRepeaterIdle.blockID)
+				itemID = Item.redstoneRepeater.itemID;
+			else if (itemID == Block.redstoneComparatorIdle.blockID)
+				itemID = Item.comparator.itemID;
+			
+			while (stacksize > 0 && check)
+			{
+				ItemStack stack = new ItemStack(itemID, (stacksize > 63 ? 64 : stacksize % 64), keyArray.get(1));
+				check = consumeInventoryItemStack(temp, stack);
+				if (!check) player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
+				else stacksize -= 64;
+			}
+			
+			if (!check) break;
+		}
+		/*
 		for (ItemStack stack : list)
 		{
 			int itemID = stack.itemID;
-			if (stack.itemID == RedstoneHelper.baseBlock.itemID)
+			if (stack.itemID == RedstoneHelper.baseBlockItem.itemID)
 				itemID = getRealBlockID(stack.itemID, 0);
 			else if (stack.itemID == Block.redstoneWire.blockID)
 				itemID = Item.redstone.itemID;
@@ -91,55 +117,101 @@ public class RedstoneGenerator extends StructureGeneratorBase
 			else if (stack.itemID == Block.redstoneComparatorIdle.blockID)
 				itemID = Item.comparator.itemID;
 			
-			for (int i = 0; i < stack.stackSize; ++i) {
+			for (int i = 0; i < stack.stackSize; ++i)
+			{
 				check = temp.consumeInventoryItem(itemID);
-			}
-			if (!check) {
-				player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
-				break;
+				
+				if (!check) {
+					player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
+					break;
+				}
 			}
 		}
-		
+		*/
 		if (check) player.inventory.copyInventory(temp);
 		
 		return check;
 	}
 	
 	/**
+	 * Consumes one item from player inventory matching itemstack's id and meta or
+	 * returns false if no matching ItemStack found; only takes metadata into account
+	 * for items with subtypes, not for items with durability
+	 */
+	private final boolean consumeInventoryItemStack(InventoryPlayer inventory, ItemStack itemstack)
+	{
+		if (itemstack != null)
+		{
+			while (itemstack.stackSize > 0)
+			{
+				for (ItemStack invstack : inventory.mainInventory)
+				{
+					if (invstack != null && invstack.itemID == itemstack.itemID && (!itemstack.getHasSubtypes() || invstack.getItemDamage() == itemstack.getItemDamage()))
+					{
+						if (invstack.stackSize <= itemstack.stackSize) {
+							itemstack.stackSize -= invstack.stackSize;
+							invstack.stackSize = 0;
+						} else {
+							invstack.stackSize -= itemstack.stackSize;
+							return true;
+						}
+					}
+				}
+				
+				// Gone through entire inventory but stack not empty
+				return false;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Returns a list of all items necessary to build a structure
 	 */
-	private static final List<ItemStack> getRequiredItems(Structure structure)
+	private static final Map<List<Integer>, Integer> getRequiredItems(Structure structure)
 	{
-		List<ItemStack> list = new LinkedList<ItemStack>();
-		HashMap<Integer, Integer> countMap = new HashMap<Integer, Integer>();
+		//List<ItemStack> list = new LinkedList<ItemStack>();
+		HashMap<List<Integer>, Integer> countMap = new HashMap<List<Integer>, Integer>();
 		
 		for (int[][][][] blockArray : structure.blockArrayList()) {
 			for (int y = 0; y < blockArray.length; ++y) {
 				for (int x = 0; x < blockArray[y].length; ++x) {
 					for (int z = 0; z < blockArray[y][x].length; ++z)
 					{
-						if (blockArray[y][x][z].length > 0)
+						if (blockArray[y][x][z].length > 0 && blockArray[y][x][z][0] > 0)
 						{
 							// allows configurable block id by using item id as placeholder
-							int id = (blockArray[y][x][z][0] == LogicGates.BASE ? RedstoneHelper.baseBlock.itemID : blockArray[y][x][z][0]);
+							int id = (blockArray[y][x][z][0] == LogicGates.BASE ? RedstoneHelper.baseBlockItem.itemID : blockArray[y][x][z][0]);
+							int meta = (blockArray[y][x][z].length > 1 ? blockArray[y][x][z][1] : 0);
 							
-							if (countMap.containsKey(id)) countMap.put(id, countMap.get(id) + 1);
-							else countMap.put(id, 1);
+							if (countMap.containsKey(Arrays.asList(id, meta))) countMap.put(Arrays.asList(id, meta), countMap.get(Arrays.asList(id, meta)) + 1);
+							else countMap.put(Arrays.asList(id, meta), 1);
 						}
 					}
 				}
 			}
 		}
 		
-		for (int key : countMap.keySet())
+		return countMap;
+		/*
+		for (List<Integer> keyArray : countMap.keySet())
 		{
-			if (key == RedstoneHelper.baseBlock.itemID)
-				list.add(new ItemStack(RedstoneHelper.baseBlock));
-			else
-				list.add(new ItemStack(Block.blocksList[key], countMap.get(key)));
+			while (countMap.get(keyArray.get(0)) > 0)
+			{
+				int stacksize = (countMap.get(keyArray.get(0)) % 64 == 0 ? 64 : countMap.get(keyArray.get(0)) % 64);
+				
+				if (keyArray.get(0) == RedstoneHelper.baseBlockItem.itemID)
+					list.add(new ItemStack(RedstoneHelper.baseBlockItem, stacksize, countMap.get(keyArray.get(1))));
+				else
+					list.add(new ItemStack(Block.blocksList[keyArray.get(0)], stacksize, countMap.get(keyArray.get(1))));
+				
+				countMap.put(keyArray, countMap.get(keyArray.get(0)) - 64);
+			}
 		}
 		
 		return list;
+		*/
 	}
 	
 	/** Add structures to list */
