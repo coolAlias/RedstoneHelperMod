@@ -1,3 +1,20 @@
+/**
+    Copyright (C) <2013> <coolAlias>
+
+    This file is part of coolAlias' Redstone Helper Mod; as such,
+    you can redistribute it and/or modify it under the terms of the GNU
+    General Public License as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package coolalias.redstonehelper;
 
 import java.io.File;
@@ -7,6 +24,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
 import net.minecraftforge.common.Property;
+import coolalias.redstonehelper.handlers.GuiHandler;
 import coolalias.redstonehelper.handlers.RHPacketHandler;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
@@ -19,6 +37,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.network.NetworkRegistry;
 import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.common.registry.LanguageRegistry;
 
@@ -36,15 +55,15 @@ public class RedstoneHelper
 	
 	public static final int MOD_ITEM_INDEX_DEFAULT = 8889;
 	
-	private int modItemIndex;
+	private static int modItemIndex, guiIndex = 0;
+	
+	public static final int guiBaseSelectorID = ++guiIndex;
 	
 	public static Item logicHelper;
 	
-	public static Item baseBlockItem;// = new Item(8890 - 256).setUnlocalizedName("baseBlockItem");
+	private static int baseBlockID, baseBlockMeta;
 	
-	private static int baseBlockID;
-	
-	public static boolean requiresMaterials;
+	public static boolean requiresMaterials, highlightIO;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
@@ -57,10 +76,16 @@ public class RedstoneHelper
         modItemIndex = config.getItem("modItemIndex", MOD_ITEM_INDEX_DEFAULT).getInt() - 256;
         
         baseBlockID = config.get(Configuration.CATEGORY_BLOCK, "baseBlockID", Block.dirt.blockID).getInt();
+        baseBlockMeta = config.get(Configuration.CATEGORY_BLOCK, "baseBlockMeta", 0).getInt();
         
-        Property property = config.get(Configuration.CATEGORY_GENERAL, "Materials Required", "nothing");
+        Property property = config.get(Configuration.CATEGORY_GENERAL, "Materials Required", true);
         property.comment = "If true, consumes all blocks/items used in the circuit generated";
         requiresMaterials = property.getBoolean(true);
+        
+        property = new Property();
+        property = config.get(Configuration.CATEGORY_GENERAL, "Highlight Input/Output", true);
+        property.comment = "Circuit input locations use light blue cloth, output uses red; if false, base block is used";
+        highlightIO = property.getBoolean(true);
         
         if (FMLCommonHandler.instance().getSide().isClient())
         	RHKeyBindings.init(config);
@@ -75,7 +100,7 @@ public class RedstoneHelper
 		GameRegistry.addShapelessRecipe(new ItemStack(logicHelper), Item.stick, Block.dirt);
 		LanguageRegistry.addName(logicHelper, "Logic Helper");
 		
-		baseBlockItem = new Item(modItemIndex++).setUnlocalizedName("baseBlockItem");
+		NetworkRegistry.instance().registerGuiHandler(this, new GuiHandler());
 	}
 	
 	@EventHandler
@@ -91,9 +116,24 @@ public class RedstoneHelper
 	}
 	
 	/**
+	 * Returns metadata value of generic filler block used to build circuits/gates
+	 */
+	public static final int getBaseBlockMeta() {
+		return baseBlockMeta;
+	}
+	
+	/**
 	 * Sets id of generic filler block used to build circuits/gates
 	 */
-	public static final void setBaseBlockID(int id) {
+	public static final void setBaseBlock(int id) {
+		setBaseBlock(id, 0);
+	}
+	
+	/**
+	 * Sets id and metadata of generic filler block used to build circuits/gates
+	 */
+	public static final void setBaseBlock(int id, int meta) {
 		baseBlockID = id;
+		baseBlockMeta = meta;
 	}
 }

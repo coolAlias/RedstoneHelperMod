@@ -1,3 +1,20 @@
+/**
+    Copyright (C) <2013> <coolAlias>
+
+    This file is part of coolAlias' Redstone Helper Mod; as such,
+    you can redistribute it and/or modify it under the terms of the GNU
+    General Public License as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package coolalias.redstonehelper.utils;
 
 import java.util.Arrays;
@@ -15,6 +32,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.FakePlayerFactory;
+import coolalias.redstonehelper.ItemRedstoneHelper;
 import coolalias.redstonehelper.LogicGates;
 import coolalias.redstonehelper.RedstoneHelper;
 import coolalias.redstonehelper.lib.LogHelper;
@@ -31,7 +49,11 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	
 	public static final Map<String, List<String>> descriptions = new HashMap();
 	
-	public RedstoneGenerator() {}
+	private EntityPlayer player;
+	
+	public RedstoneGenerator(EntityPlayer player) {
+		this.player = player;
+	}
 
 	public RedstoneGenerator(Entity entity, int[][][][] blocks) {
 		super(entity, blocks);
@@ -48,23 +70,59 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	@Override
 	public int getRealBlockID(int fakeID, int customData1)
 	{
-		if (fakeID == LogicGates.BASE || fakeID == RedstoneHelper.baseBlockItem.itemID)
-		{
-			int id = RedstoneHelper.getBaseBlockID();
-			
-			if (Block.blocksList[id] == null || !Block.blocksList[id].isOpaqueCube()) {
-				LogHelper.log(Level.WARNING, "Block id " + id + " is not a valid block for redstone construction; resetting to dirt");
-				RedstoneHelper.setBaseBlockID(Block.dirt.blockID);
-			}
-			
-			return RedstoneHelper.getBaseBlockID();
+		int id, baseID = RedstoneHelper.getBaseBlockID();
+		ItemStack helper = (player != null ? player.getHeldItem() : null);
+		
+		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
+			baseID = ItemRedstoneHelper.getBaseBlockID(helper);
+		
+		if (fakeID == LogicGates.BASE)
+			id = baseID;
+		else if (fakeID == LogicGates.INOUT)
+			id = (RedstoneHelper.highlightIO ? Block.cloth.blockID : baseID);
+		else {
+			LogHelper.log(Level.WARNING, "Unhandled block id " + fakeID + " in getRealBlockID, returning 0 (air block).");
+			id = 0;
 		}
 		
-		return 0;
+		if (id > 0 && (Block.blocksList[id] == null || !Block.blocksList[id].isOpaqueCube())) {
+			LogHelper.log(Level.WARNING, "Block id " + id + " is not a valid block for redstone construction; resetting to dirt");
+			id = Block.dirt.blockID;
+			if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
+				ItemRedstoneHelper.setBaseBlockID(helper, id);
+			// RedstoneHelper.setBaseBlock(id);
+		}
+		
+		return id;
+	}
+	
+	/**
+	 * Returns base block metadata value from configuration or player's held item 
+	 */
+	public int getRealBlockMeta()
+	{
+		int meta = RedstoneHelper.getBaseBlockMeta();
+		ItemStack helper = (player != null ? player.getHeldItem() : null);
+		
+		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
+			meta = ItemRedstoneHelper.getBaseBlockMeta(helper);
+		
+		return meta;
 	}
 
 	@Override
-	public void onCustomBlockAdded(World world, int x, int y, int z, int fakeID, int customData1, int customData2) {}
+	public void onCustomBlockAdded(World world, int x, int y, int z, int fakeID, int customData1, int customData2)
+	{
+		LogHelper.log(Level.INFO, "Custom block was added.");
+		ItemStack helper = (player != null ? player.getHeldItem() : null);
+		
+		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
+		{
+			if (ItemRedstoneHelper.getBaseBlockMeta(helper) != 0 && world.getBlockId(x, y, z) == ItemRedstoneHelper.getBaseBlockID(helper)) {
+				world.setBlockMetadataWithNotify(x, y, z, ItemRedstoneHelper.getBaseBlockMeta(helper), 3);
+			}
+		}
+	}
 	
 	/**
 	 * Returns true if player has all items required to generate structure and consumes those items
@@ -83,20 +141,24 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		for (List<Integer> keyArray : countMap.keySet())
 		{
 			int stacksize = countMap.get(keyArray);
-			int itemID = keyArray.get(0);
+			int id = keyArray.get(0), meta = keyArray.get(1);
 			
-			if (itemID == RedstoneHelper.baseBlockItem.itemID)
-				itemID = getRealBlockID(itemID, 0);
-			else if (itemID == Block.redstoneWire.blockID)
-				itemID = Item.redstone.itemID;
-			else if (itemID == Block.redstoneRepeaterIdle.blockID)
-				itemID = Item.redstoneRepeater.itemID;
-			else if (itemID == Block.redstoneComparatorIdle.blockID)
-				itemID = Item.comparator.itemID;
+			if (LogicGates.configurableBlocks.contains(id)) {
+				if (id == LogicGates.BASE || !RedstoneHelper.highlightIO)
+					meta = getRealBlockMeta();
+				id = getRealBlockID(id, 0);
+			}
+			else if (id == Block.redstoneWire.blockID)
+				id = Item.redstone.itemID;
+			else if (id == Block.redstoneRepeaterIdle.blockID)
+				id = Item.redstoneRepeater.itemID;
+			else if (id == Block.redstoneComparatorIdle.blockID)
+				id = Item.comparator.itemID;
 			
 			while (stacksize > 0 && check)
 			{
-				ItemStack stack = new ItemStack(itemID, (stacksize > 63 ? 64 : stacksize % 64), keyArray.get(1));
+				ItemStack stack = new ItemStack(id, (stacksize > 63 ? 64 : stacksize % 64), meta);
+				LogHelper.log(Level.INFO, "Stack to consume: " + stack.toString());
 				check = consumeInventoryItemStack(temp, stack);
 				if (!check) player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
 				else stacksize -= 64;
@@ -104,30 +166,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 			
 			if (!check) break;
 		}
-		/*
-		for (ItemStack stack : list)
-		{
-			int itemID = stack.itemID;
-			if (stack.itemID == RedstoneHelper.baseBlockItem.itemID)
-				itemID = getRealBlockID(stack.itemID, 0);
-			else if (stack.itemID == Block.redstoneWire.blockID)
-				itemID = Item.redstone.itemID;
-			else if (stack.itemID == Block.redstoneRepeaterIdle.blockID)
-				itemID = Item.redstoneRepeater.itemID;
-			else if (stack.itemID == Block.redstoneComparatorIdle.blockID)
-				itemID = Item.comparator.itemID;
-			
-			for (int i = 0; i < stack.stackSize; ++i)
-			{
-				check = temp.consumeInventoryItem(itemID);
-				
-				if (!check) {
-					player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
-					break;
-				}
-			}
-		}
-		*/
+		
 		if (check) player.inventory.copyInventory(temp);
 		
 		return check;
@@ -171,7 +210,6 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	 */
 	private static final Map<List<Integer>, Integer> getRequiredItems(Structure structure)
 	{
-		//List<ItemStack> list = new LinkedList<ItemStack>();
 		HashMap<List<Integer>, Integer> countMap = new HashMap<List<Integer>, Integer>();
 		
 		for (int[][][][] blockArray : structure.blockArrayList()) {
@@ -181,8 +219,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 					{
 						if (blockArray[y][x][z].length > 0 && blockArray[y][x][z][0] > 0)
 						{
-							// allows configurable block id by using item id as placeholder
-							int id = (blockArray[y][x][z][0] == LogicGates.BASE ? RedstoneHelper.baseBlockItem.itemID : blockArray[y][x][z][0]);
+							int id = blockArray[y][x][z][0];
 							int meta = (blockArray[y][x][z].length > 1 ? blockArray[y][x][z][1] : 0);
 							
 							if (countMap.containsKey(Arrays.asList(id, meta))) countMap.put(Arrays.asList(id, meta), countMap.get(Arrays.asList(id, meta)) + 1);
@@ -194,24 +231,6 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		}
 		
 		return countMap;
-		/*
-		for (List<Integer> keyArray : countMap.keySet())
-		{
-			while (countMap.get(keyArray.get(0)) > 0)
-			{
-				int stacksize = (countMap.get(keyArray.get(0)) % 64 == 0 ? 64 : countMap.get(keyArray.get(0)) % 64);
-				
-				if (keyArray.get(0) == RedstoneHelper.baseBlockItem.itemID)
-					list.add(new ItemStack(RedstoneHelper.baseBlockItem, stacksize, countMap.get(keyArray.get(1))));
-				else
-					list.add(new ItemStack(Block.blocksList[keyArray.get(0)], stacksize, countMap.get(keyArray.get(1))));
-				
-				countMap.put(keyArray, countMap.get(keyArray.get(0)) - 64);
-			}
-		}
-		
-		return list;
-		*/
 	}
 	
 	/** Add structures to list */

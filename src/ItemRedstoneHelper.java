@@ -1,3 +1,20 @@
+/**
+    Copyright (C) <2013> <coolAlias>
+
+    This file is part of coolAlias' Redstone Helper Mod; as such,
+    you can redistribute it and/or modify it under the terms of the GNU
+    General Public License as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package coolalias.redstonehelper;
 
 import java.util.List;
@@ -208,6 +225,52 @@ public class ItemRedstoneHelper extends Item
 		itemstack.stackTagCompound.setInteger(data[REMOVE], (itemstack.stackTagCompound.getInteger(data[REMOVE]) + 1) % 2);
 		return itemstack.stackTagCompound.getInteger(data[REMOVE]) == 1;
 	}
+	
+	/**
+	 * Returns current base block ID
+	 */
+	public static final int getBaseBlockID(ItemStack itemstack) {
+		if (itemstack.stackTagCompound == null)
+			initNBTCompound(itemstack);
+		return itemstack.stackTagCompound.getInteger("currentBlockID");
+	}
+	
+	/**
+	 * Sets current base block ID for itemstack
+	 */
+	public static final void setBaseBlockID(ItemStack itemstack, int id) {
+		if (itemstack.stackTagCompound == null)
+			initNBTCompound(itemstack);
+		itemstack.stackTagCompound.setInteger("currentBlockID", id);
+	}
+	
+	/**
+	 * Returns current base block metadata
+	 */
+	public static final int getBaseBlockMeta(ItemStack itemstack) {
+		if (itemstack.stackTagCompound == null)
+			initNBTCompound(itemstack);
+		return itemstack.stackTagCompound.getInteger("currentBlockMeta");
+	}
+	
+	/**
+	 * Sets current base block metadata for itemstack
+	 */
+	public static final void setBaseBlockMeta(ItemStack itemstack, int meta) {
+		if (itemstack.stackTagCompound == null)
+			initNBTCompound(itemstack);
+		itemstack.stackTagCompound.setInteger("currentBlockMeta", meta);
+	}
+	
+	/**
+	 * Sets current base block ID and metadata for itemstack
+	 */
+	public static final void setBaseBlock(ItemStack itemstack, int id, int meta) {
+		if (itemstack.stackTagCompound == null)
+			initNBTCompound(itemstack);
+		itemstack.stackTagCompound.setInteger("currentBlockID", id);
+		itemstack.stackTagCompound.setInteger("currentBlockMeta", meta);
+	}
 
 	@Override
 	public int getMaxItemUseDuration(ItemStack itemstack) {
@@ -222,7 +285,7 @@ public class ItemRedstoneHelper extends Item
 
 		if (!world.isRemote && RedstoneGenerator.structures.size() > 0)
 		{
-			RedstoneGenerator gen = new RedstoneGenerator();
+			RedstoneGenerator gen = new RedstoneGenerator(player);
 			NBTTagCompound tag = itemstack.stackTagCompound;
 			Structure structure = getCurrentStructure(itemstack);
 			
@@ -257,9 +320,11 @@ public class ItemRedstoneHelper extends Item
 		for (int i = 0; i < INVERT_Y; ++i) {
 			itemstack.stackTagCompound.setInteger(data[i], 0);
 		}
-
+		
 		itemstack.stackTagCompound.setBoolean(data[INVERT_Y], false);
-
+		itemstack.stackTagCompound.setInteger("currentBlockID", RedstoneHelper.getBaseBlockID());
+		itemstack.stackTagCompound.setInteger("currentBlockMeta", RedstoneHelper.getBaseBlockMeta());
+		
 		LogHelper.log(Level.INFO, "NBT Tag initialized for ItemRedstoneHelper");
 	}
 
@@ -290,6 +355,7 @@ public class ItemRedstoneHelper extends Item
 		case RHKeyBindings.PREV_STRUCT: player.addChatMessage("[STRUCTURE GEN] Selected structure: " + helper.getStructureName(helper.prevStructure(itemstack)) + " at index " + (helper.getCurrentStructureIndex(itemstack) + 1)); break;
 		case RHKeyBindings.NEXT_STRUCT: player.addChatMessage("[STRUCTURE GEN] Selected structure: " + helper.getStructureName(helper.nextStructure(itemstack)) + " at index " + (helper.getCurrentStructureIndex(itemstack) + 1)); break;
 		case RHKeyBindings.TOGGLE_REMOVE: player.addChatMessage("[STRUCTURE GEN] Structure will " + (helper.toggleRemove(itemstack) ? "be removed" : "generate") + " on right click."); break;
+		//case RHKeyBindings.GUI_CONFIG: player.openGui(RedstoneHelper.instance, RedstoneHelper.guiBaseSelectorID, player.worldObj, (int) player.posX, (int) player.posY, (int) player.posZ); break;
 		default: LogHelper.log(Level.WARNING, "ItemRedstoneHelper received an invalid key id, unable to process.");
 		}
 	}

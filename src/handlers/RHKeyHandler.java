@@ -1,3 +1,20 @@
+/**
+    Copyright (C) <2013> <coolAlias>
+
+    This file is part of coolAlias' Redstone Helper Mod; as such,
+    you can redistribute it and/or modify it under the terms of the GNU
+    General Public License as published by the Free Software Foundation,
+    either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package coolalias.redstonehelper.handlers;
 
 import java.util.EnumSet;
@@ -6,11 +23,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.settings.KeyBinding;
 import coolalias.redstonehelper.ItemRedstoneHelper;
+import coolalias.redstonehelper.RedstoneHelper;
 import coolalias.redstonehelper.lib.ModInfo;
 import coolalias.redstonehelper.lib.RHKeyBindings;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.TickType;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -42,8 +59,12 @@ public class RHKeyHandler extends KeyHandler
 		{
 			EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 			
-			if (player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemRedstoneHelper) {
-				RHPacketHandler.sendPacketKeyPress(RHKeyBindings.RHKeyMap.get(kb.keyCode));
+			if (player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemRedstoneHelper)
+			{
+				if (RHKeyBindings.RHKeyMap.get(kb.keyCode) == RHKeyBindings.GUI_CONFIG)
+					player.openGui(RedstoneHelper.instance, RedstoneHelper.guiBaseSelectorID, player.worldObj, (int) player.posX, (int) player.posY, (int) player.posZ);
+				else
+					RHPacketHandler.sendPacketKeyPress(RHKeyBindings.RHKeyMap.get(kb.keyCode));
 			}
 		}
 	}
