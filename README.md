@@ -1,29 +1,32 @@
 RedstoneHelperMod
 =================
-
 WIP - Build redstone circuits with the click of a button
 
 Never able to remember how to build an RS Latch or pulse limiter? Hate toggling out of Minecraft to look up redstone
 schematics? Then this mod is for you.
 
-Using the 'Redstone Helper' item, quickly switch between logic gates and basic circuits, then generate it in the world
-with a simple right click! While in survival mode, all the required blocks will be automatically removed from the player's
-inventory as though the player placed them all him/herself, or you can disable material requirements in the config to
-allow free redstone building.
-
-To change the type of block used as a base, currently you have to edit the value of 'BASE' in the array file. I plan to
-make this first a configurable option, and then hopefully selectable in-game from a gui. The current base block is dirt.
-
-Hover the mouse over the Redstone Helper for a short description of the selected gate / circuit.
+Features
+========
+- Instantly generate various circuits by right-clicking with the Redstone Helper Item
+- All circuits are accessible from a single Item; cycle between them with '[' and ']'
+- Auto-consume required materials from inventory upon generation, or turn off material requirements
+- Tooltip displays currently selected circuit for each Redstone Helper Item
+- Basic building block of the circuit can be changed via an intuitive Gui, and the default is configurable
+- Input signal locations of the circuit are denoted with light blue wool
+- Output signal locations of the circuit are denoted with red wool
+- Disable input / output signal highlighting to use the current base block instead of wool
 
 Current Gates/Circuits
 ======================
 - or gate (horizontal and vertical variations)
 - nor gate (horizontal and vertical variations)
 
+Gate and circuit designs used are from the Ultimate Collection of Redstone Circuits page (link below), so credit to
+the many contributors of what is truly the ultimate resource for redstone designers.
+Link to Ultimate Collection: http://www.minecraftforum.net/topic/892820-ultimate-collection-of-redstone-circuits/
+
 Controls
 ========
-
 If you've used my StructureGenerationTool, the controls are exactly the same as for the ItemStructureSpawner.
 
 (coming soon) Sneak to highlight area in which circuit will generate
