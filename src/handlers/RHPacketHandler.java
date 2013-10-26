@@ -37,7 +37,7 @@ import cpw.mods.fml.common.network.Player;
 public class RHPacketHandler implements IPacketHandler
 {
 	/** Packet IDs */
-	private static final byte PACKET_KEY_PRESS = 1, PACKET_SET_BASE_BLOCK = 2;
+	private static final byte PACKET_KEY_PRESS = 1, PACKET_SET_BASE_BLOCK = 2, PACKET_HIGHLIGHT = 3;
 
 	@Override
 	public void onPacketData(INetworkManager manager, Packet250CustomPayload packet, Player player)
@@ -52,6 +52,7 @@ public class RHPacketHandler implements IPacketHandler
 				switch (packetType) {
 				case PACKET_KEY_PRESS: handlePacketKeyPress(packet, (EntityPlayer) player, inputStream); break;
 				case PACKET_SET_BASE_BLOCK: handlePacketSetBaseBlock(packet, (EntityPlayer) player, inputStream); break;
+				case PACKET_HIGHLIGHT: handlePacketHighlight((EntityPlayer) player); break;
 				default: LogHelper.log(Level.SEVERE, "Unhandled packet exception for packet id " + packetType);
 				}
 			} finally {
@@ -104,6 +105,25 @@ public class RHPacketHandler implements IPacketHandler
 			ex.printStackTrace();
 		}
 	}
+	
+	public static final void sendPacketHighlight()
+	{
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			DataOutputStream outputStream = new DataOutputStream(bos);
+
+			try {
+				outputStream.writeByte(RHPacketHandler.PACKET_HIGHLIGHT);
+			} finally {
+				outputStream.close();
+			}
+
+			PacketDispatcher.sendPacketToServer(PacketDispatcher.getPacket(ModInfo.CHANNEL, bos.toByteArray()));
+		} catch (Exception ex) {
+			LogHelper.log(Level.SEVERE, "Failed to send highlight packet.");
+			ex.printStackTrace();
+		}
+	}
 
 	private void handlePacketKeyPress(Packet250CustomPayload packet, EntityPlayer player, DataInputStream inputStream)
 	{
@@ -136,5 +156,13 @@ public class RHPacketHandler implements IPacketHandler
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void handlePacketHighlight(EntityPlayer player)
+	{
+		if (player.getHeldItem() == null || !(player.getHeldItem().getItem() instanceof ItemRedstoneHelper))
+			LogHelper.log(Level.SEVERE, "Held item is not an instance of ItemRedstoneHelper - unable to process highlight packet");
+		else
+			ItemRedstoneHelper.toggleHighlightIO(player.getHeldItem());
 	}
 }

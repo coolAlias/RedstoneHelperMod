@@ -46,14 +46,21 @@ public class LogicGates
 		configurableBlocks.add(INOUT);
 	}
 	
+	/*
 	public static final int[][][][] blockArrayTemplate =
 	{
-		{ // y = 1
-	    	{ // x = 1
+		{
+	    	{
 	        	{}
 	        }
 	    }
 	};
+	*/
+	
+	/*
+	EAST Front: max x, Back: x = 0, Left (south): max z, Right (north): z = 0
+	WEST Front: x = 0, Back: max x, Left (north): z = 0, Right (south): max z
+	 */
 	
 	public static final int[][][][] notGateFlat =
 	{
@@ -83,11 +90,34 @@ public class LogicGates
 	    {{{WIRE},{WIRE},{WIRE}}}
 	};
 	
+	/** CORRECT */
 	public static final int[][][][] norGateTall =
 	{
-	    {{{},{},{INOUT,OUTPUT}}},
-	    {{{INOUT,INPUT},{TORCH,3},{WIRE}}},
-	    {{{WIRE}}},
-	    {{{INOUT,INPUT}}}
+		{{{INOUT,OUTPUT}},{},{}},
+	    {{{WIRE}},{{TORCH,2}},{{INOUT,INPUT}}},
+	    {{{}},{{}},{{WIRE}}},
+	    {{{}},{{}},{{INOUT,INPUT}}}
+	};
+	
+	public static final int[][][][] andGateFlat =
+	{
+		{
+			{{INOUT,INPUT},{BASE},{INOUT,INPUT}},
+			{{},{TORCH,1}},
+			{{},{WIRE}}
+		},
+	    {{{TORCH,5},{WIRE},{TORCH,5}}}
+	};
+	
+	public static final int[][][][] andGateFlatPiston =
+	{
+		{
+	    	{{INOUT,INPUT},{INOUT,INPUT},{WIRE},{INOUT,OUTPUT}},{},{}
+	    },
+	    {
+	    	{{LEVER,5},{WIRE},{BASE},{WIRE}},
+	    	{{},{},{STICKY,4}},
+	    	{{},{LEVER,4},{INOUT,INPUT}}
+	    }
 	};
 }

@@ -25,6 +25,7 @@ import net.minecraftforge.common.Configuration;
 
 import org.lwjgl.input.Keyboard;
 
+import coolalias.redstonehelper.RedstoneHelper;
 import coolalias.redstonehelper.handlers.RHKeyHandler;
 import cpw.mods.fml.client.registry.KeyBindingRegistry;
 import cpw.mods.fml.relauncher.Side;
@@ -56,16 +57,27 @@ public class RHKeyBindings
 	
 	public static void init(Configuration config)
 	{
-		KeyBinding[] key = new KeyBinding[desc.length];
-		boolean[] repeat = new boolean[desc.length];
+		KeyBinding[] keys;
+		boolean[] repeat;
 		
-		for (int i = 0; i < desc.length; ++i)
-		{
-			key[i] = new KeyBinding(desc[i], config.get(RHKeyHandler.label, desc[i], keyValues[i]).getInt());
-			repeat[i] = false;
-			RHKeyMap.put(key[i].keyCode, (byte) i);
+		if (!RedstoneHelper.isSGTModLoaded) {
+			keys = new KeyBinding[desc.length];
+			repeat = new boolean[desc.length];
+
+			for (int i = 0; i < desc.length; ++i)
+			{
+				keys[i] = new KeyBinding(desc[i], config.get(RHKeyHandler.label, desc[i], keyValues[i]).getInt());
+				repeat[i] = false;
+				RHKeyMap.put(keys[i].keyCode, (byte) i);
+			}
+		} else {
+			keys = new KeyBinding[1];
+			keys[0] = new KeyBinding(desc[GUI_CONFIG], config.get(RHKeyHandler.label, desc[GUI_CONFIG], keyValues[GUI_CONFIG]).getInt());
+			repeat = new boolean[1];
+			repeat[0] = false;
+			RHKeyMap.put(keys[0].keyCode, (byte) GUI_CONFIG);
 		}
 		
-        KeyBindingRegistry.registerKeyBinding(new RHKeyHandler(key, repeat));
+        KeyBindingRegistry.registerKeyBinding(new RHKeyHandler(keys, repeat));
 	}
 }

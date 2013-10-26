@@ -87,7 +87,7 @@ public class GuiBaseSelector extends GuiContainer
 		this.setCurrentCreativeTab();
 		ItemStack held = player.getHeldItem();
 
-		buttonList.add(new GuiButton(0, guiLeft + xSize - 50, guiTop + 2, 48, 20, RedstoneHelper.highlightIO ? "Disable" : "Enable"));
+		buttonList.add(new GuiButton(0, guiLeft + xSize - 52, guiTop + 3, 48, 20, ItemRedstoneHelper.highlightIO(held) ? "Disable" : "Enable"));
 
 		if (held != null && held.getItem() instanceof ItemRedstoneHelper) {
 			ItemStack blockStack = new ItemStack(ItemRedstoneHelper.getBaseBlockID(held),1,ItemRedstoneHelper.getBaseBlockMeta(held));
@@ -106,7 +106,7 @@ public class GuiBaseSelector extends GuiContainer
 
 		int buttonX = guiLeft + xSize - 50, buttonY = guiTop + 2;
 		if (x > buttonX && x < buttonX + 48 && y > buttonY && y < buttonY + 20)
-			drawHoveringText(Arrays.asList("Click to " + (RedstoneHelper.highlightIO ? "disable" : "enable") + " input/output highlighting"), x - guiLeft - 96, y - guiTop, fontRenderer);
+			drawHoveringText(Arrays.asList("Click to " + (ItemRedstoneHelper.highlightIO(player.getHeldItem()) ? "disable" : "enable") + " input/output highlighting"), x - guiLeft - 96, y - guiTop, fontRenderer);
 	}
 
 	/**
@@ -178,6 +178,24 @@ public class GuiBaseSelector extends GuiContainer
 		}
 
 		super.drawScreen(par1, par2, par3);
+		
+		Slot theSlot = null;
+
+		for (int m = 0; m < this.inventorySlots.inventorySlots.size(); ++m)
+		{
+			Slot slot = (Slot)this.inventorySlots.inventorySlots.get(m);
+			if (this.isMouseOverSlot(slot, par1, par2) && slot.func_111238_b())
+			{
+				theSlot = slot;
+			}
+		}
+
+		if (mc.thePlayer.inventory.getItemStack() == null && theSlot != null && theSlot.getHasStack())
+		{
+			ItemStack itemstack1 = theSlot.getStack();
+			// color code it somehow? event?
+			// drawItemStackTooltip(itemstack1, par1, par2);
+		}
 	}
 
 	/**
@@ -200,8 +218,9 @@ public class GuiBaseSelector extends GuiContainer
 	{
 		if (button.id == 0)
 		{
-			RedstoneHelper.highlightIO = !RedstoneHelper.highlightIO;
-			button.displayString = RedstoneHelper.highlightIO ? "Disable" : "Enable";
+			ItemStack helper = player.getHeldItem();
+			button.displayString = !ItemRedstoneHelper.highlightIO(helper) ? "Disable" : "Enable";
+			RHPacketHandler.sendPacketHighlight();
 		}
 	}
 
@@ -242,6 +261,10 @@ public class GuiBaseSelector extends GuiContainer
 				roll = 25;
 			}
 		}
+	}
+
+	private boolean isMouseOverSlot(Slot par1Slot, int par2, int par3) {
+		return this.isPointInRegion(par1Slot.xDisplayPosition, par1Slot.yDisplayPosition, 16, 16, par2, par3);
 	}
 
 	/**

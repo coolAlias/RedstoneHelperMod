@@ -23,13 +23,17 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.Configuration;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.Property;
 import coolalias.redstonehelper.handlers.GuiHandler;
 import coolalias.redstonehelper.handlers.RHPacketHandler;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
 import coolalias.redstonehelper.lib.RHKeyBindings;
+import coolalias.structuregen.handlers.SGTBlockHighlightHandler;
+import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -63,7 +67,7 @@ public class RedstoneHelper
 	
 	private static int baseBlockID, baseBlockMeta;
 	
-	public static boolean requiresMaterials, highlightIO;
+	public static boolean requiresMaterials, highlightIO, isSGTModLoaded;
 	
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
@@ -84,8 +88,10 @@ public class RedstoneHelper
         
         property = new Property();
         property = config.get(Configuration.CATEGORY_GENERAL, "Highlight Input/Output", true);
-        property.comment = "Circuit input locations use light blue cloth, output uses red; if false, base block is used";
+        property.comment = "Marks input / output signal locations with colored wool; if false, base block is used";
         highlightIO = property.getBoolean(true);
+        
+        isSGTModLoaded = Loader.isModLoaded("structuregen");
         
         if (FMLCommonHandler.instance().getSide().isClient())
         	RHKeyBindings.init(config);
@@ -97,10 +103,14 @@ public class RedstoneHelper
 	public void load(FMLInitializationEvent event)
 	{
 		logicHelper = new ItemRedstoneHelper(modItemIndex++).setUnlocalizedName("logicHelper");
+		GameRegistry.addRecipe(new ItemStack(logicHelper), "y", "x", 'y', Block.blockRedstone, 'x', Item.stick);
 		GameRegistry.addShapelessRecipe(new ItemStack(logicHelper), Item.stick, Block.dirt);
 		LanguageRegistry.addName(logicHelper, "Logic Helper");
 		
 		NetworkRegistry.instance().registerGuiHandler(this, new GuiHandler());
+		
+		if (FMLClientHandler.instance().getSide().isClient())
+			MinecraftForge.EVENT_BUS.register(new SGTBlockHighlightHandler());
 	}
 	
 	@EventHandler

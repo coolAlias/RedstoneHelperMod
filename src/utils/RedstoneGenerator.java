@@ -30,6 +30,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.FakePlayerFactory;
 import coolalias.redstonehelper.ItemRedstoneHelper;
@@ -50,6 +51,8 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	public static final Map<String, List<String>> descriptions = new HashMap();
 	
 	private EntityPlayer player;
+	
+	public RedstoneGenerator() {}
 	
 	public RedstoneGenerator(EntityPlayer player) {
 		this.player = player;
@@ -73,24 +76,25 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		int id, baseID = RedstoneHelper.getBaseBlockID();
 		ItemStack helper = (player != null ? player.getHeldItem() : null);
 		
+		
 		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
 			baseID = ItemRedstoneHelper.getBaseBlockID(helper);
 		
 		if (fakeID == LogicGates.BASE)
 			id = baseID;
 		else if (fakeID == LogicGates.INOUT)
-			id = (RedstoneHelper.highlightIO ? Block.cloth.blockID : baseID);
+			id = (highlightIO(helper) ? Block.cloth.blockID : baseID);
 		else {
 			LogHelper.log(Level.WARNING, "Unhandled block id " + fakeID + " in getRealBlockID, returning 0 (air block).");
 			id = 0;
 		}
 		
 		if (id > 0 && (Block.blocksList[id] == null || !Block.blocksList[id].isOpaqueCube())) {
-			LogHelper.log(Level.WARNING, "Block id " + id + " is not a valid block for redstone construction; resetting to dirt");
+			player.addChatMessage("Block id " + id + " is not a valid block for redstone construction; resetting to dirt");
 			id = Block.dirt.blockID;
 			if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
 				ItemRedstoneHelper.setBaseBlockID(helper, id);
-			// RedstoneHelper.setBaseBlock(id);
+			else RedstoneHelper.setBaseBlock(id);
 		}
 		
 		return id;
@@ -113,7 +117,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	@Override
 	public void onCustomBlockAdded(World world, int x, int y, int z, int fakeID, int customData1, int customData2)
 	{
-		LogHelper.log(Level.INFO, "Custom block was added.");
+		//LogHelper.log(Level.INFO, "Custom block was added.");
 		ItemStack helper = (player != null ? player.getHeldItem() : null);
 		
 		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
@@ -144,7 +148,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 			int id = keyArray.get(0), meta = keyArray.get(1);
 			
 			if (LogicGates.configurableBlocks.contains(id)) {
-				if (id == LogicGates.BASE || !RedstoneHelper.highlightIO)
+				if (id == LogicGates.BASE || !highlightIO(player.getHeldItem()))
 					meta = getRealBlockMeta();
 				id = getRealBlockID(id, 0);
 			}
@@ -158,7 +162,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 			while (stacksize > 0 && check)
 			{
 				ItemStack stack = new ItemStack(id, (stacksize > 63 ? 64 : stacksize % 64), meta);
-				LogHelper.log(Level.INFO, "Stack to consume: " + stack.toString());
+				//LogHelper.log(Level.INFO, "Stack to consume: " + stack.toString());
 				check = consumeInventoryItemStack(temp, stack);
 				if (!check) player.addChatMessage("Not enough " + stack.getDisplayName() + "; " + stack.stackSize + " required.");
 				else stacksize -= 64;
@@ -170,6 +174,14 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		if (check) player.inventory.copyInventory(temp);
 		
 		return check;
+	}
+	
+	/**
+	 * Returns whether or not to highlight input / output signal locations.
+	 * If 'helper' is null, default value is used instead
+	 */
+	private final boolean highlightIO(ItemStack helper) {
+		return (helper != null && helper.getItem() instanceof ItemRedstoneHelper ? ItemRedstoneHelper.highlightIO(helper) : RedstoneHelper.highlightIO);
 	}
 	
 	/**
@@ -237,7 +249,9 @@ public class RedstoneGenerator extends StructureGeneratorBase
 	static
 	{
 		Map<String, String> desc2 = new HashMap();
-		Structure structure = new Structure("orGateFlat");
+		Structure structure;
+		
+		structure = new Structure("orGateFlat");
 		desc2.put(structure.name, "On if at least one input on");
 		structure.addBlockArray(LogicGates.orGateFlat);
 		structures.add(structure);
@@ -257,11 +271,21 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		structure.addBlockArray(LogicGates.norGateTall);
 		structures.add(structure);
 		
+		structure = new Structure("andGateFlat");
+		desc2.put(structure.name, "On if both inputs are on");
+		structure.addBlockArray(LogicGates.andGateFlat);
+		structures.add(structure);
+		
+		structure = new Structure("andGateFlatPiston");
+		desc2.put(structure.name, "On if both inputs are on; torchless");
+		structure.addBlockArray(LogicGates.andGateFlatPiston);
+		structures.add(structure);
+		
 		for (Structure s : structures) {
 			itemsRequired.put(s.name, getRequiredItems(s));
 			List<String> desc = new LinkedList();
-			desc.add("Current: " + s.name);
-			desc.add(desc2.get(s.name));
+			desc.add(EnumChatFormatting.BOLD + "Circuit: " + EnumChatFormatting.RESET + EnumChatFormatting.ITALIC + s.name);
+			desc.add(EnumChatFormatting.ITALIC + desc2.get(s.name));
 			descriptions.put(s.name, desc);
 		}
 	}
