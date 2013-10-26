@@ -32,8 +32,7 @@ public class LogicGates
 	
 	private static final int
 		// Color for wool blocks denoting input and output locations of circuit
-		INPUT = 3, OUTPUT = 14,//, INOUT = Block.cloth.blockID,
-		
+		INPUT = 3, OUTPUT = 14,
 		PISTON = Block.pistonBase.blockID,
 		STICKY = Block.pistonStickyBase.blockID,
 		TORCH = Block.torchRedstoneActive.blockID,
@@ -46,21 +45,7 @@ public class LogicGates
 		configurableBlocks.add(INOUT);
 	}
 	
-	/*
-	public static final int[][][][] blockArrayTemplate =
-	{
-		{
-	    	{
-	        	{}
-	        }
-	    }
-	};
-	*/
-	
-	/*
-	EAST Front: max x, Back: x = 0, Left (south): max z, Right (north): z = 0
-	WEST Front: x = 0, Back: max x, Left (north): z = 0, Right (south): max z
-	 */
+	/**	EAST Front: max x, Back: x = 0, Left (south): max z, Right (north): z = 0 */
 	
 	public static final int[][][][] notGateFlat =
 	{
@@ -75,22 +60,17 @@ public class LogicGates
 	
 	public static final int[][][][] orGateTall =
 	{
-	    {{{},{INOUT,OUTPUT},{INOUT,INPUT}}},
-	    {{{BASE},{WIRE},{WIRE}}},
-	    {{{REPEATER,2},{INOUT,INPUT}}}
+	    {{{}},{{INOUT,OUTPUT}},{{INOUT,INPUT}}},
+	    {{{BASE}},{{WIRE}},{{WIRE}}},
+	    {{{REPEATER,1}},{{INOUT,INPUT}}}
 	};
 	
 	public static final int[][][][] norGateFlat =
 	{
-		{
-			{{INOUT,INPUT},{BASE},{INOUT,INPUT}},
-			{{},{TORCH,1}},
-			{{},{WIRE}}
-		},
-	    {{{WIRE},{WIRE},{WIRE}}}
+		{{{},{WIRE},{}},{{},{TORCH,2}},{{INOUT,INPUT},{BASE},{INOUT,INPUT}}},
+	    {{},{},{{WIRE},{WIRE},{WIRE}}}
 	};
 	
-	/** CORRECT */
 	public static final int[][][][] norGateTall =
 	{
 		{{{INOUT,OUTPUT}},{},{}},
@@ -101,23 +81,13 @@ public class LogicGates
 	
 	public static final int[][][][] andGateFlat =
 	{
-		{
-			{{INOUT,INPUT},{BASE},{INOUT,INPUT}},
-			{{},{TORCH,1}},
-			{{},{WIRE}}
-		},
-	    {{{TORCH,5},{WIRE},{TORCH,5}}}
+		{{{},{WIRE},{}},{{},{TORCH,2}},{{INOUT,INPUT},{BASE},{INOUT,INPUT}}},
+	    {{},{},{{TORCH,5},{WIRE},{TORCH,5}}}
 	};
 	
 	public static final int[][][][] andGateFlatPiston =
 	{
-		{
-	    	{{INOUT,INPUT},{INOUT,INPUT},{WIRE},{INOUT,OUTPUT}},{},{}
-	    },
-	    {
-	    	{{LEVER,5},{WIRE},{BASE},{WIRE}},
-	    	{{},{},{STICKY,4}},
-	    	{{},{LEVER,4},{INOUT,INPUT}}
-	    }
+		{{{INOUT,OUTPUT},{},{}},{{WIRE}},{{INOUT,INPUT}},{{INOUT,INPUT}}},
+	    {{{WIRE}},{{BASE},{STICKY,2},{INOUT,INPUT}},{{WIRE},{},{LEVER,1}},{{LEVER,6},{},{}}}
 	};
 }
