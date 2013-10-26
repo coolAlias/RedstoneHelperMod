@@ -15,14 +15,17 @@
     along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package coolalias.redstonehelper;
+package coolalias.redstonehelper.lib.circuits;
 
 import java.util.LinkedList;
 import java.util.List;
 
 import net.minecraft.block.Block;
 
-public class LogicGates
+/**
+ * Provides static block id references for all child circuit array classes to use
+ */
+public class CircuitBase
 {
 	/** All configurable blocks stored here for ease of reference in calling getRealBlockID */
 	public static final List<Integer> configurableBlocks = new LinkedList();
@@ -30,7 +33,7 @@ public class LogicGates
 	// Generic filler block on which to place redstone wire / torches / etc.
 	public static final int BASE = 4096, INOUT = 4097;
 	
-	private static final int
+	protected static final int
 		// Color for wool blocks denoting input and output locations of circuit
 		INPUT = 3, OUTPUT = 14,
 		PISTON = Block.pistonBase.blockID,
@@ -44,50 +47,4 @@ public class LogicGates
 		configurableBlocks.add(BASE);
 		configurableBlocks.add(INOUT);
 	}
-	
-	/**	EAST Front: max x, Back: x = 0, Left (south): max z, Right (north): z = 0 */
-	
-	public static final int[][][][] notGateFlat =
-	{
-	    {{{WIRE},{BASE},{TORCH,3},{WIRE}}}
-	};
-	
-	public static final int[][][][] orGateFlat =
-	{
-		{{{INOUT,INPUT},{INOUT,OUTPUT},{INOUT,INPUT}}},
-	    {{{WIRE},{WIRE},{WIRE}}}
-	};
-	
-	public static final int[][][][] orGateTall =
-	{
-	    {{{}},{{INOUT,OUTPUT}},{{INOUT,INPUT}}},
-	    {{{BASE}},{{WIRE}},{{WIRE}}},
-	    {{{REPEATER,1}},{{INOUT,INPUT}}}
-	};
-	
-	public static final int[][][][] norGateFlat =
-	{
-		{{{},{WIRE},{}},{{},{TORCH,2}},{{INOUT,INPUT},{BASE},{INOUT,INPUT}}},
-	    {{},{},{{WIRE},{WIRE},{WIRE}}}
-	};
-	
-	public static final int[][][][] norGateTall =
-	{
-		{{{INOUT,OUTPUT}},{},{}},
-	    {{{WIRE}},{{TORCH,2}},{{INOUT,INPUT}}},
-	    {{{}},{{}},{{WIRE}}},
-	    {{{}},{{}},{{INOUT,INPUT}}}
-	};
-	
-	public static final int[][][][] andGateFlat =
-	{
-		{{{},{WIRE},{}},{{},{TORCH,2}},{{INOUT,INPUT},{BASE},{INOUT,INPUT}}},
-	    {{},{},{{TORCH,5},{WIRE},{TORCH,5}}}
-	};
-	
-	public static final int[][][][] andGateFlatPiston =
-	{
-		{{{INOUT,OUTPUT},{},{}},{{WIRE}},{{INOUT,INPUT}},{{INOUT,INPUT}}},
-	    {{{WIRE}},{{BASE},{STICKY,2},{INOUT,INPUT}},{{WIRE},{},{LEVER,1}},{{LEVER,6},{},{}}}
-	};
 }

@@ -29,7 +29,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
-import coolalias.redstonehelper.utils.RedstoneGenerator;
+import coolalias.redstonehelper.utils.LogicGateGenerator;
 import coolalias.structuregen.items.ItemStructureSpawnerBase;
 import coolalias.structuregen.util.Structure;
 import cpw.mods.fml.relauncher.Side;
@@ -45,7 +45,7 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 	@Override
 	public final int nextStructure(ItemStack itemstack) {
 		int index = getData(itemstack, STRUCTURE_INDEX) + 1;
-		if (index >= RedstoneGenerator.structures.size()) index = 0;
+		if (index >= LogicGateGenerator.structures.size()) index = 0;
 		setData(itemstack, STRUCTURE_INDEX, index);
 		return index;
 	}
@@ -53,24 +53,24 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 	@Override
 	public final int prevStructure(ItemStack itemstack) {
 		int index = getData(itemstack, STRUCTURE_INDEX) - 1;
-		if (index < 0) index = RedstoneGenerator.structures.size() - 1;
+		if (index < 0) index = LogicGateGenerator.structures.size() - 1;
 		setData(itemstack, STRUCTURE_INDEX, index);
 		return index;
 	}
 
 	@Override
 	public final String getStructureName(int index) {
-		return (index < RedstoneGenerator.structures.size() ? RedstoneGenerator.structures.get(index).name : "");
+		return (index < LogicGateGenerator.structures.size() ? LogicGateGenerator.structures.get(index).name : "");
 	}
 
 	@Override
 	public final int getCurrentStructureIndex(ItemStack itemstack) {
-		return getData(itemstack, STRUCTURE_INDEX) >= RedstoneGenerator.structures.size() ? 0 : getData(itemstack, STRUCTURE_INDEX);
+		return getData(itemstack, STRUCTURE_INDEX) >= LogicGateGenerator.structures.size() ? 0 : getData(itemstack, STRUCTURE_INDEX);
 	}
 
 	@Override
 	public final Structure getCurrentStructure(ItemStack itemstack) {
-		return RedstoneGenerator.structures.get(getCurrentStructureIndex(itemstack));
+		return LogicGateGenerator.structures.get(getCurrentStructureIndex(itemstack));
 	}
 	
 	/**
@@ -134,9 +134,9 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 	{
 		if (itemstack.stackTagCompound == null) { init(itemstack); }
 
-		if (!world.isRemote && RedstoneGenerator.structures.size() > 0)
+		if (!world.isRemote && LogicGateGenerator.structures.size() > 0)
 		{
-			RedstoneGenerator gen = new RedstoneGenerator(player);
+			LogicGateGenerator gen = new LogicGateGenerator(player);
 			Structure structure = getCurrentStructure(itemstack);
 			
 			if (structure == null) {
@@ -187,7 +187,7 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 		if (getCurrentStructure(itemstack) != null)
 		{
 			ItemStack currentBlock = new ItemStack(getBaseBlockID(itemstack), 1, getBaseBlockMeta(itemstack));
-			List<String> descriptions = RedstoneGenerator.descriptions.get(getCurrentStructure(itemstack).name);
+			List<String> descriptions = LogicGateGenerator.descriptions.get(getCurrentStructure(itemstack).name);
 			
 			list.add(EnumChatFormatting.BOLD + "Base Block: " + EnumChatFormatting.RESET + EnumChatFormatting.ITALIC + currentBlock.getDisplayName());
 			for (String description : descriptions) {

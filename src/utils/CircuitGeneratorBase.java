@@ -19,7 +19,6 @@ package coolalias.redstonehelper.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -30,43 +29,34 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.FakePlayerFactory;
 import coolalias.redstonehelper.ItemRedstoneHelper;
-import coolalias.redstonehelper.LogicGates;
 import coolalias.redstonehelper.RedstoneHelper;
 import coolalias.redstonehelper.lib.LogHelper;
+import coolalias.redstonehelper.lib.circuits.CircuitBase;
 import coolalias.structuregen.StructureGeneratorBase;
 import coolalias.structuregen.util.Structure;
 
-public class RedstoneGenerator extends StructureGeneratorBase
+public abstract class CircuitGeneratorBase extends StructureGeneratorBase
 {
-	/** List storing all structures currently available */
-	public static final List<Structure> structures = new LinkedList();
+	protected EntityPlayer player;
 	
-	/** List of all items required to build a structure, retrieved by structure's name */
-	public static final Map<String, Map<List<Integer>, Integer>> itemsRequired = new HashMap();
+	public CircuitGeneratorBase() {}
 	
-	public static final Map<String, List<String>> descriptions = new HashMap();
-	
-	private EntityPlayer player;
-	
-	public RedstoneGenerator() {}
-	
-	public RedstoneGenerator(EntityPlayer player) {
+	public CircuitGeneratorBase(EntityPlayer player) {
 		this.player = player;
 	}
 
-	public RedstoneGenerator(Entity entity, int[][][][] blocks) {
+	public CircuitGeneratorBase(Entity entity, int[][][][] blocks) {
 		super(entity, blocks);
 	}
 
-	public RedstoneGenerator(Entity entity, int[][][][] blocks, int structureFacing) {
+	public CircuitGeneratorBase(Entity entity, int[][][][] blocks, int structureFacing) {
 		super(entity, blocks, structureFacing);
 	}
 
-	public RedstoneGenerator(Entity entity, int[][][][] blocks, int structureFacing, int offX, int offY, int offZ) {
+	public CircuitGeneratorBase(Entity entity, int[][][][] blocks, int structureFacing, int offX, int offY, int offZ) {
 		super(entity, blocks, structureFacing, offX, offY, offZ);
 	}
 
@@ -80,9 +70,9 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		if (helper != null && helper.getItem() instanceof ItemRedstoneHelper)
 			baseID = ItemRedstoneHelper.getBaseBlockID(helper);
 		
-		if (fakeID == LogicGates.BASE)
+		if (fakeID == CircuitBase.BASE)
 			id = baseID;
-		else if (fakeID == LogicGates.INOUT)
+		else if (fakeID == CircuitBase.INOUT)
 			id = (highlightIO(helper) ? Block.cloth.blockID : baseID);
 		else {
 			LogHelper.log(Level.WARNING, "Unhandled block id " + fakeID + " in getRealBlockID, returning 0 (air block).");
@@ -113,7 +103,7 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		
 		return meta;
 	}
-
+	
 	@Override
 	public void onCustomBlockAdded(World world, int x, int y, int z, int fakeID, int customData1, int customData2)
 	{
@@ -147,8 +137,8 @@ public class RedstoneGenerator extends StructureGeneratorBase
 			int stacksize = countMap.get(keyArray);
 			int id = keyArray.get(0), meta = keyArray.get(1);
 			
-			if (LogicGates.configurableBlocks.contains(id)) {
-				if (id == LogicGates.BASE || !highlightIO(player.getHeldItem()))
+			if (CircuitBase.configurableBlocks.contains(id)) {
+				if (id == CircuitBase.BASE || !highlightIO(player.getHeldItem()))
 					meta = getRealBlockMeta();
 				id = getRealBlockID(id, 0);
 			}
@@ -174,6 +164,34 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		if (check) player.inventory.copyInventory(temp);
 		
 		return check;
+	}
+	
+	/**
+	 * Returns a list of all items necessary to build a structure
+	 */
+	protected static final Map<List<Integer>, Integer> getRequiredItems(Structure structure)
+	{
+		HashMap<List<Integer>, Integer> countMap = new HashMap<List<Integer>, Integer>();
+		
+		for (int[][][][] blockArray : structure.blockArrayList()) {
+			for (int y = 0; y < blockArray.length; ++y) {
+				for (int x = 0; x < blockArray[y].length; ++x) {
+					for (int z = 0; z < blockArray[y][x].length; ++z)
+					{
+						if (blockArray[y][x][z].length > 0 && blockArray[y][x][z][0] > 0)
+						{
+							int id = blockArray[y][x][z][0];
+							int meta = (blockArray[y][x][z].length > 1 ? blockArray[y][x][z][1] : 0);
+							
+							if (countMap.containsKey(Arrays.asList(id, meta))) countMap.put(Arrays.asList(id, meta), countMap.get(Arrays.asList(id, meta)) + 1);
+							else countMap.put(Arrays.asList(id, meta), 1);
+						}
+					}
+				}
+			}
+		}
+		
+		return countMap;
 	}
 	
 	/**
@@ -215,78 +233,5 @@ public class RedstoneGenerator extends StructureGeneratorBase
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * Returns a list of all items necessary to build a structure
-	 */
-	private static final Map<List<Integer>, Integer> getRequiredItems(Structure structure)
-	{
-		HashMap<List<Integer>, Integer> countMap = new HashMap<List<Integer>, Integer>();
-		
-		for (int[][][][] blockArray : structure.blockArrayList()) {
-			for (int y = 0; y < blockArray.length; ++y) {
-				for (int x = 0; x < blockArray[y].length; ++x) {
-					for (int z = 0; z < blockArray[y][x].length; ++z)
-					{
-						if (blockArray[y][x][z].length > 0 && blockArray[y][x][z][0] > 0)
-						{
-							int id = blockArray[y][x][z][0];
-							int meta = (blockArray[y][x][z].length > 1 ? blockArray[y][x][z][1] : 0);
-							
-							if (countMap.containsKey(Arrays.asList(id, meta))) countMap.put(Arrays.asList(id, meta), countMap.get(Arrays.asList(id, meta)) + 1);
-							else countMap.put(Arrays.asList(id, meta), 1);
-						}
-					}
-				}
-			}
-		}
-		
-		return countMap;
-	}
-	
-	/** Add structures to list */
-	static
-	{
-		Map<String, String> desc2 = new HashMap();
-		Structure structure;
-		
-		structure = new Structure("orGateFlat");
-		desc2.put(structure.name, "On if at least one input on");
-		structure.addBlockArray(LogicGates.orGateFlat);
-		structures.add(structure);
-		
-		structure = new Structure("orGateTall");
-		desc2.put(structure.name, "On if at least one input on");
-		structure.addBlockArray(LogicGates.orGateTall);
-		structures.add(structure);
-		
-		structure = new Structure("norGateFlat");
-		desc2.put(structure.name, "Off if at least one input on");
-		structure.addBlockArray(LogicGates.norGateFlat);
-		structures.add(structure);
-		
-		structure = new Structure("norGateTall");
-		desc2.put(structure.name, "Off if at least one input on");
-		structure.addBlockArray(LogicGates.norGateTall);
-		structures.add(structure);
-		
-		structure = new Structure("andGateFlat");
-		desc2.put(structure.name, "On if both inputs are on");
-		structure.addBlockArray(LogicGates.andGateFlat);
-		structures.add(structure);
-		
-		structure = new Structure("andGateFlatPiston");
-		desc2.put(structure.name, "On if both inputs are on; torchless");
-		structure.addBlockArray(LogicGates.andGateFlatPiston);
-		structures.add(structure);
-		
-		for (Structure s : structures) {
-			itemsRequired.put(s.name, getRequiredItems(s));
-			List<String> desc = new LinkedList();
-			desc.add(EnumChatFormatting.BOLD + "Circuit: " + EnumChatFormatting.RESET + EnumChatFormatting.ITALIC + s.name);
-			desc.add(EnumChatFormatting.ITALIC + desc2.get(s.name));
-			descriptions.put(s.name, desc);
-		}
 	}
 }
