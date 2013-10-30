@@ -30,8 +30,8 @@ import net.minecraft.world.World;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
 import coolalias.redstonehelper.utils.LogicGateGenerator;
-import coolalias.structuregen.items.ItemStructureSpawnerBase;
-import coolalias.structuregen.util.Structure;
+import coolalias.structuregen.mod.items.ItemStructureSpawnerBase;
+import coolalias.structuregen.api.util.Structure;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -59,7 +59,7 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 	}
 
 	@Override
-	public final String getStructureName(int index) {
+	public final String getStructureName(ItemStack itemstack, int index) {
 		return (index < LogicGateGenerator.structures.size() ? LogicGateGenerator.structures.get(index).name : "");
 	}
 
