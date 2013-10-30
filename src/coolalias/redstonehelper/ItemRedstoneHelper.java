@@ -30,8 +30,8 @@ import net.minecraft.world.World;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
 import coolalias.redstonehelper.utils.LogicGateGenerator;
-import coolalias.structuregen.mod.items.ItemStructureSpawnerBase;
 import coolalias.structuregen.api.util.Structure;
+import coolalias.structuregenmod.items.ItemStructureSpawnerBase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 

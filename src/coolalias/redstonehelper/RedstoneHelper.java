@@ -30,7 +30,7 @@ import coolalias.redstonehelper.handlers.RHPacketHandler;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.ModInfo;
 import coolalias.redstonehelper.lib.RHKeyBindings;
-import coolalias.structuregen.mod.handlers.SGTBlockHighlightHandler;
+import coolalias.structuregenmod.handlers.SGTBlockHighlightHandler;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
