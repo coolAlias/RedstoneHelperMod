@@ -35,8 +35,8 @@ import coolalias.redstonehelper.ItemRedstoneHelper;
 import coolalias.redstonehelper.RedstoneHelper;
 import coolalias.redstonehelper.lib.LogHelper;
 import coolalias.redstonehelper.lib.circuits.CircuitBase;
-import coolalias.structuregen.api.util.Structure;
-import coolalias.structuregen.api.util.StructureGeneratorBase;
+import coolalias.structuregenapi.util.Structure;
+import coolalias.structuregenapi.util.StructureGeneratorBase;
 
 public abstract class CircuitGeneratorBase extends StructureGeneratorBase
 {

@@ -26,7 +26,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumChatFormatting;
 import coolalias.redstonehelper.lib.circuits.LogicGates;
-import coolalias.structuregen.api.util.Structure;
+import coolalias.structuregenapi.util.Structure;
 
 public class LogicGateGenerator extends CircuitGeneratorBase
 {
