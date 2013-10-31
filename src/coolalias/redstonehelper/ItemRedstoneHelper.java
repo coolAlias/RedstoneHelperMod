@@ -41,36 +41,10 @@ public class ItemRedstoneHelper extends ItemStructureSpawnerBase
 		super(par1);
 		setCreativeTab(CreativeTabs.tabMisc);
 	}
-
+	
 	@Override
-	public final int nextStructure(ItemStack itemstack) {
-		int index = getData(itemstack, STRUCTURE_INDEX) + 1;
-		if (index >= LogicGateGenerator.structures.size()) index = 0;
-		setData(itemstack, STRUCTURE_INDEX, index);
-		return index;
-	}
-
-	@Override
-	public final int prevStructure(ItemStack itemstack) {
-		int index = getData(itemstack, STRUCTURE_INDEX) - 1;
-		if (index < 0) index = LogicGateGenerator.structures.size() - 1;
-		setData(itemstack, STRUCTURE_INDEX, index);
-		return index;
-	}
-
-	@Override
-	public final String getStructureName(ItemStack itemstack, int index) {
-		return (index < LogicGateGenerator.structures.size() ? LogicGateGenerator.structures.get(index).name : "");
-	}
-
-	@Override
-	public final int getCurrentStructureIndex(ItemStack itemstack) {
-		return getData(itemstack, STRUCTURE_INDEX) >= LogicGateGenerator.structures.size() ? 0 : getData(itemstack, STRUCTURE_INDEX);
-	}
-
-	@Override
-	public final Structure getCurrentStructure(ItemStack itemstack) {
-		return LogicGateGenerator.structures.get(getCurrentStructureIndex(itemstack));
+	public List<Structure> getStructureList(ItemStack itemstack) {
+		return LogicGateGenerator.structures;
 	}
 	
 	/**
