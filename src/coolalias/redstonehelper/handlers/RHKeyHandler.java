@@ -55,16 +55,16 @@ public class RHKeyHandler extends KeyHandler
 	@Override
 	public void keyDown(EnumSet<TickType> types, KeyBinding kb, boolean tickEnd, boolean isRepeat)
 	{
-		if (tickEnd && RHKeyBindings.RHKeyMap.containsKey(kb.keyCode) && FMLClientHandler.instance().getClient().inGameHasFocus)
+		if (tickEnd && RHKeyBindings.rhKeyMap.containsKey(kb.keyCode) && FMLClientHandler.instance().getClient().inGameHasFocus)
 		{
 			EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
 			
 			if (player.getHeldItem() != null && player.getHeldItem().getItem() instanceof ItemRedstoneHelper)
 			{
-				if (RHKeyBindings.RHKeyMap.get(kb.keyCode) == RHKeyBindings.GUI_CONFIG)
+				if (RHKeyBindings.rhKeyMap.get(kb.keyCode) == RHKeyBindings.GUI_CONFIG)
 					player.openGui(RedstoneHelper.instance, RedstoneHelper.guiBaseSelectorID, player.worldObj, (int) player.posX, (int) player.posY, (int) player.posZ);
 				else
-					RHPacketHandler.sendPacketKeyPress(RHKeyBindings.RHKeyMap.get(kb.keyCode));
+					RHPacketHandler.sendPacketKeyPress(RHKeyBindings.rhKeyMap.get(kb.keyCode));
 			}
 		}
 	}

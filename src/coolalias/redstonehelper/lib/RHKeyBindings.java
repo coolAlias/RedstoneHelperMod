@@ -53,7 +53,7 @@ public class RHKeyBindings
 	};
 	
 	/** Maps Keyboard values to RedstoneHelper KeyBinding values */
-	public static final Map<Integer, Byte> RHKeyMap = new HashMap<Integer, Byte>();
+	public static final Map<Integer, Byte> rhKeyMap = new HashMap<Integer, Byte>();
 	
 	public static void init(Configuration config)
 	{
@@ -68,14 +68,14 @@ public class RHKeyBindings
 			{
 				keys[i] = new KeyBinding(desc[i], config.get(RHKeyHandler.label, desc[i], keyValues[i]).getInt());
 				repeat[i] = false;
-				RHKeyMap.put(keys[i].keyCode, (byte) i);
+				rhKeyMap.put(keys[i].keyCode, (byte) i);
 			}
 		} else {
 			keys = new KeyBinding[1];
 			keys[0] = new KeyBinding(desc[GUI_CONFIG], config.get(RHKeyHandler.label, desc[GUI_CONFIG], keyValues[GUI_CONFIG]).getInt());
 			repeat = new boolean[1];
 			repeat[0] = false;
-			RHKeyMap.put(keys[0].keyCode, (byte) GUI_CONFIG);
+			rhKeyMap.put(keys[0].keyCode, (byte) GUI_CONFIG);
 		}
 		
         KeyBindingRegistry.registerKeyBinding(new RHKeyHandler(keys, repeat));
